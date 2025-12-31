@@ -1,201 +1,61 @@
+
 <!DOCTYPE html>
-<html lang="hi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>राधा नाम जाप काउंटर</title>
-    <!-- PWA Manifest Link -->
-    <link rel="manifest" href="/manifest.json">
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Radha Naam Jaap Counter</title>
+    <meta name="theme-color" content="#FF9933">
+    <link rel="manifest" href="manifest.json">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&family=Rozha+One&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --bg-color: #fff5e6;
-            --text-color: #333;
-            --accent-color: #ff6600;
-            --button-text-color: white;
-            --card-bg: #ffffff;
-        }
-
-        [data-theme="dark"] {
-            --bg-color: #1a1a2e;
-            --text-color: #e0e0e0;
-            --accent-color: #e94560;
-            --button-text-color: white;
-            --card-bg: #2a2a3e;
-        }
-
-        body {
-            background: var(--bg-color);
-            color: var(--text-color);
-            text-align: center;
-            font-family: sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
-            transition: background 0.3s, color 0.3s;
-        }
-
-        .container {
-            width: 90%;
-            max-width: 400px;
-        }
-
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-        
-        .header button {
-            background: var(--card-bg);
-            border: none;
-            padding: 10px;
-            border-radius: 50%;
-            cursor: pointer;
-            color: var(--text-color);
-        }
-
-        #count {
-            font-size: 80px;
-            color: var(--accent-color);
-            margin: 10px 0;
-        }
-
-        .tap-area {
-            position: relative;
-            width: 200px;
-            height: 200px;
-            background: var(--accent-color);
-            border-radius: 50%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-            margin: 20px auto;
-            color: var(--button-text-color);
-        }
-
-        .tap-area h2 {
-            margin: 0;
-            font-size: 32px;
-        }
-
-        .tap-area span {
-            font-size: 14px;
-            opacity: 0.8;
-        }
-
-        .card {
-            background: var(--card-bg);
-            padding: 15px;
-            border-radius: 10px;
-            margin-top: 15px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-        }
-
-        .mala-info {
-            display: flex;
-            justify-content: space-between;
-            font-size: 16px;
-        }
+      body {
+        font-family: 'Poppins', sans-serif;
+        -webkit-tap-highlight-color: transparent;
+        margin: 0;
+        padding: 0;
+      }
+      .hindi-heading {
+        font-family: 'Rozha One', serif;
+      }
+      .hindi-script {
+        font-family: 'Kalam', cursive;
+      }
+      * {
+        user-select: none;
+        -webkit-user-select: none;
+        box-sizing: border-box;
+      }
     </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h3>श्री राधा</h3>
-            <div>
-                <button onclick="toggleTheme()">☀️/🌙</button>
-                <button onclick="resetCounter()">🔄</button>
-            </div>
-        </div>
-
-        <div id="count">0</div>
-        <p>कुल जाप</p>
-
-        <div class="tap-area" onclick="increment()">
-            <h2>राधा</h2>
-            <h2>राधा</h2>
-            <span>TAP BEAD</span>
-        </div>
-
-        <div class="card">
-            <div class="mala-info">
-                <span>माला पूर्ण:</span>
-                <span id="mala-count">0</span>
-            </div>
-        </div>
-        
-        <div class="card">
-            <p style="font-size: 12px;">"राधा नाम में वो शक्ति है जो हृदय को प्रेम से भर देती है"</p>
-        </div>
-    </div>
-
     <script>
-        let count = localStorage.getItem('jaapCount') || 0;
-        let malaCount = localStorage.getItem('malaCount') || 0;
-        const countEl = document.getElementById('count');
-        const malaCountEl = document.getElementById('mala-count');
-        const body = document.body;
-
-        countEl.innerText = count;
-        malaCountEl.innerText = malaCount;
-        
-        // Load theme from local storage
-        document.documentElement.setAttribute('data-theme', localStorage.getItem('theme') || 'light');
-
-        function increment() {
-            count++;
-            countEl.innerText = count;
-            localStorage.setItem('jaapCount', count);
-            
-            // Check for Mala completion
-            if (count % 108 === 0) {
-                malaCount++;
-                malaCountEl.innerText = malaCount;
-                localStorage.setItem('malaCount', malaCount);
-                // Optional: Add a subtle alert or sound here
-            }
-
-            // Haptic feedback (mobile only)
-            if (navigator.vibrate) {
-                navigator.vibrate(50);
-            }
-        }
-
-        function resetCounter() {
-            if (confirm("क्या आप आज की गिनती रीसेट करना चाहते हैं?")) {
-                count = 0;
-                malaCount = 0;
-                countEl.innerText = count;
-                malaCountEl.innerText = malaCount;
-                localStorage.setItem('jaapCount', count);
-                localStorage.setItem('malaCount', malaCount);
-            }
-        }
-
-        function toggleTheme() {
-            const currentTheme = document.documentElement.getAttribute('data-theme');
-            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-            document.documentElement.setAttribute('data-theme', newTheme);
-            localStorage.setItem('theme', newTheme);
-        }
-
-        // Register Service Worker for PWA (needs a manifest.json file in the repo root)
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/service-worker.js').then(registration => {
-                    console.log('SW registered: ', registration);
-                }).catch(registrationError => {
-                    console.log('SW registration failed: ', registrationError);
-                });
-            });
-        }
+      // Shim process.env for browser environments to prevent crashes
+      window.process = window.process || { env: { NODE_ENV: 'production' } };
     </script>
-</body>
+    <script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@19.0.0",
+    "react-dom": "https://esm.sh/react-dom@19.0.0",
+    "react-dom/client": "https://esm.sh/react-dom@19.0.0/client",
+    "@google/genai": "https://esm.sh/@google/genai@1.3.0",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "react/": "https://esm.sh/react@^19.2.3/"
+  }
+}
+</script>
+    <script type="module" src="./index.tsx"></script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW registration failed:', err));
+        });
+      }
+    </script>
+  </body>
 </html>
