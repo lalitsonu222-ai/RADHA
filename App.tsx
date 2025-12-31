@@ -34,6 +34,7 @@ const App: React.FC = () => {
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   
   const bellAudioRef = useRef<HTMLAudioElement | null>(null);
   const tapAudioRef = useRef<HTMLAudioElement | null>(null);
@@ -42,7 +43,34 @@ const App: React.FC = () => {
     bellAudioRef.current = new Audio(BELL_SOUND_URL);
     tapAudioRef.current = new Audio(TAP_SOUND_URL);
     if (tapAudioRef.current) tapAudioRef.current.volume = 0.2;
+
+    const handleBeforeInstallPrompt = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      console.log('App is ready for install. Button should be visible.');
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    
+    window.addEventListener('appinstalled', () => {
+      setDeferredPrompt(null);
+      console.log('App successfully installed!');
+    });
+
+    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
   }, []);
+
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) {
+        console.log('No install prompt available.');
+        return;
+    }
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      setDeferredPrompt(null);
+    }
+  };
 
   useEffect(() => {
     localStorage.setItem('radha_jaap_state', JSON.stringify(countState));
@@ -50,21 +78,15 @@ const App: React.FC = () => {
 
   useEffect(() => {
     localStorage.setItem('radha_jaap_theme', themeType);
-  }, [themeType]);
-
-  useEffect(() => {
     localStorage.setItem('radha_jaap_mode', mode);
     localStorage.setItem('radha_jaap_sound', String(soundEnabled));
-  }, [mode, soundEnabled]);
+  }, [themeType, mode, soundEnabled]);
 
   const currentTheme = THEMES[themeType];
 
   const handleIncrement = useCallback((e?: React.PointerEvent | React.MouseEvent) => {
     if (e) e.preventDefault();
-    
-    if ('vibrate' in navigator) {
-      navigator.vibrate(50);
-    }
+    if ('vibrate' in navigator) navigator.vibrate(50);
     
     setActiveTab(true);
     setTimeout(() => setActiveTab(false), 100);
@@ -77,14 +99,12 @@ const App: React.FC = () => {
     setCountState(prev => {
       const newTotal = prev.totalCount + 1;
       const newCurrentMala = prev.currentMalaCount + 1;
-      
       let newMalasCompleted = prev.malasCompleted;
       let finalCurrentMala = newCurrentMala;
 
       if (mode === CountingMode.MALA && newCurrentMala >= MALA_TARGET) {
         newMalasCompleted += 1;
         finalCurrentMala = 0;
-        
         if (soundEnabled && bellAudioRef.current) {
           bellAudioRef.current.currentTime = 0;
           bellAudioRef.current.play().catch(() => {});
@@ -101,7 +121,6 @@ const App: React.FC = () => {
 
   const handleShareSystem = async () => {
     const shareText = `राधे राधे! आज मैंने श्री राधा नाम का ${countState.totalCount} बार जाप किया। आप भी इस सुंदर 'राधा नाम जाप' ऐप का उपयोग करें: ${window.location.origin}`;
-    
     if (navigator.share) {
       try {
         await navigator.share({
@@ -155,6 +174,16 @@ const App: React.FC = () => {
           <span className="text-[10px] uppercase tracking-[0.2em] font-bold opacity-40 -mt-1" style={{ color: currentTheme.text }}>Vrindavan Dhama</span>
         </div>
         <div className="flex gap-2">
+          {deferredPrompt && (
+            <button 
+              onClick={handleInstallClick}
+              className="flex flex-col items-center justify-center p-2 rounded-2xl shadow-lg transition-all active:scale-90 bg-white/90 backdrop-blur-sm text-green-600 animate-bounce border border-green-100"
+              title="Download App"
+            >
+              <DownloadIcon />
+              <span className="text-[8px] font-bold uppercase mt-0.5">Install</span>
+            </button>
+          )}
           <button 
             onClick={handleShareSystem}
             className="p-3 rounded-full shadow-lg transition-all active:scale-90 bg-white/80 backdrop-blur-sm"
@@ -288,5 +317,6 @@ const ResetIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="no
 const SoundOnIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>;
 const SoundOffIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M11 5L6 9H2V15H6L11 19V5Z" /><line x1="23" y1="9" x2="17" y2="15" /><line x1="17" y1="9" x2="23" y2="15" /></svg>;
 const ShareIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><line x1="8.59" y1="13.51" x2="15.42" y2="17.49" /><line x1="15.41" y1="6.51" x2="8.59" y2="10.49" /></svg>;
+const DownloadIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>;
 
 export default App;

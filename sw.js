@@ -1,9 +1,8 @@
 
-const CACHE_NAME = 'radha-jaap-v9-final';
+const CACHE_NAME = 'radha-jaap-v12';
 const ASSETS_TO_CACHE = [
-  './',
-  './index.html',
-  './manifest.json',
+  'index.html',
+  'manifest.json',
   'https://cdn.tailwindcss.com'
 ];
 
@@ -33,25 +32,9 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
-
   event.respondWith(
     fetch(event.request)
-      .then((response) => {
-        if (response && response.status === 200 && response.type === 'basic') {
-          const responseToCache = response.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseToCache);
-          });
-        }
-        return response;
-      })
-      .catch(() => {
-        return caches.match(event.request).then((cachedResponse) => {
-          if (cachedResponse) return cachedResponse;
-          if (event.request.mode === 'navigate') {
-            return caches.match('./index.html');
-          }
-        });
-      })
+      .then((response) => response)
+      .catch(() => caches.match(event.request))
   );
 });
