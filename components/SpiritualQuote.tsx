@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
-import { fetchDailySpiritualMessage } from '../services/geminiService';
-import { ThemeColors } from '../types';
+import { fetchDailySpiritualMessage } from '../services/geminiService.ts';
+import { ThemeColors } from '../types.ts';
 
 interface QuoteProps {
   theme: ThemeColors;
