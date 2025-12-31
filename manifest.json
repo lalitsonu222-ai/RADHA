@@ -5,28 +5,22 @@
   "description": "A spiritual jaap counter for Radha Rani devotees.",
   "icons": [
     {
-      "src": "https://cdn-icons-png.flaticon.com/512/3303/3303108.png",
-      "type": "image/png",
-      "sizes": "192x192",
-      "purpose": "any"
-    },
-    {
-      "src": "https://cdn-icons-png.flaticon.com/512/3303/3303108.png",
-      "type": "image/png",
+      "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiB2aWV3Qm94PSIwIDAgNTEyIDUxMiI+CiAgPHJlY3Qgd2lkdGg9IjUxMiIgaGVpZ2h0PSI1MTIiIHJ4PSIxMDAiIGZpbGw9IiNGRjk5MzMiLz4KICA8dGV4dCB4PSI1MCUiIHk9IjU4JSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9InNlcmlmLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjE4MCIgZm9udC13ZWlnaHQ9ImJvbGQiIGZpbGw9IndoaXRlIj7gpLDgpL7gpKfgpL48L3RleHQ+Cjwvc3ZnPg==",
+      "type": "image/svg+xml",
       "sizes": "512x512",
       "purpose": "any"
     },
     {
-      "src": "https://cdn-icons-png.flaticon.com/512/3303/3303108.png",
-      "type": "image/png",
+      "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxOTIiIGhlaWdodD0iMTkyIiB2aWV3Qm94PSIwIDAgNTEyIDUxMiI+CiAgPHJlY3Qgd2lkdGg9IjUxMiIgaGVpZ2h0PSI1MTIiIHJ4PSIxMDAiIGZpbGw9IiNGRjk5MzMiLz4KICA8dGV4dCB4PSI1MCUiIHk9IjU4JSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9InNlcmlmLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjE4MCIgZm9udC13ZWlnaHQ9ImJvbGQiIGZpbGw9IndoaXRlIj7gpLDgpL7gpKfgpL48L3RleHQ+Cjwvc3ZnPg==",
+      "type": "image/svg+xml",
       "sizes": "192x192",
       "purpose": "maskable"
     }
   ],
-  "start_url": "/index.html",
+  "start_url": "./index.html",
   "display": "standalone",
   "theme_color": "#FF9933",
   "background_color": "#FFF3E0",
   "orientation": "portrait",
-  "scope": "/"
+  "scope": "./"
 }

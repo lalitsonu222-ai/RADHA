@@ -1,5 +1,5 @@
 
-const CACHE_NAME = 'radha-jaap-v8-fix';
+const CACHE_NAME = 'radha-jaap-v9-final';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',

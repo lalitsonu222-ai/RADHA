@@ -34,7 +34,6 @@ const App: React.FC = () => {
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState(false);
-  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   
   const bellAudioRef = useRef<HTMLAudioElement | null>(null);
   const tapAudioRef = useRef<HTMLAudioElement | null>(null);
@@ -43,14 +42,6 @@ const App: React.FC = () => {
     bellAudioRef.current = new Audio(BELL_SOUND_URL);
     tapAudioRef.current = new Audio(TAP_SOUND_URL);
     if (tapAudioRef.current) tapAudioRef.current.volume = 0.2;
-
-    const handleBeforeInstallPrompt = (e: Event) => {
-      e.preventDefault();
-      setDeferredPrompt(e);
-    };
-
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
   }, []);
 
   useEffect(() => {
@@ -118,9 +109,8 @@ const App: React.FC = () => {
           text: shareText,
           url: window.location.origin,
         });
-        setIsShareModalOpen(false);
       } catch (err) {
-        console.error('Share failed:', err);
+        setIsShareModalOpen(true);
       }
     } else {
       setIsShareModalOpen(true);
@@ -140,7 +130,6 @@ const App: React.FC = () => {
     setIsShareModalOpen(false);
   };
 
-  // Fix: Added missing handleReset function to reset counts and close modal
   const handleReset = () => {
     setCountState({ totalCount: 0, currentMalaCount: 0, malasCompleted: 0 });
     setIsResetModalOpen(false);
@@ -258,12 +247,6 @@ const App: React.FC = () => {
           <SpiritualQuote theme={currentTheme} />
         </div>
       </main>
-
-      <footer className="w-full max-w-md py-6 text-center">
-        <p className="hindi-script text-[10px] font-bold tracking-[0.2em] uppercase opacity-30" style={{ color: currentTheme.text }}>
-          ॥ राधा रानी की जय ॥
-        </p>
-      </footer>
 
       {isResetModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/40 backdrop-blur-md transition-all">
