@@ -8,8 +8,12 @@ const TAP_SOUND_URL = 'https://www.soundjay.com/buttons/sounds/button-20.mp3';
 
 const App: React.FC = () => {
   const [countState, setCountState] = useState<JaapState>(() => {
-    const saved = localStorage.getItem('radha_jaap_state');
-    return saved ? JSON.parse(saved) : { totalCount: 0, currentMalaCount: 0, malasCompleted: 0 };
+    try {
+      const saved = localStorage.getItem('radha_jaap_state');
+      return saved ? JSON.parse(saved) : { totalCount: 0, currentMalaCount: 0, malasCompleted: 0 };
+    } catch (e) {
+      return { totalCount: 0, currentMalaCount: 0, malasCompleted: 0 };
+    }
   });
 
   const [themeType, setThemeType] = useState<ThemeType>(() => {
@@ -28,6 +32,7 @@ const App: React.FC = () => {
   });
 
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   
@@ -39,7 +44,6 @@ const App: React.FC = () => {
     tapAudioRef.current = new Audio(TAP_SOUND_URL);
     if (tapAudioRef.current) tapAudioRef.current.volume = 0.2;
 
-    // PWA Install Prompt Listener
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e);
@@ -48,15 +52,6 @@ const App: React.FC = () => {
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
     return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
   }, []);
-
-  const handleInstallClick = async () => {
-    if (!deferredPrompt) return;
-    deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    if (outcome === 'accepted') {
-      setDeferredPrompt(null);
-    }
-  };
 
   useEffect(() => {
     localStorage.setItem('radha_jaap_state', JSON.stringify(countState));
@@ -113,6 +108,39 @@ const App: React.FC = () => {
     });
   }, [soundEnabled, mode]);
 
+  const handleShareSystem = async () => {
+    const shareText = `राधे राधे! आज मैंने श्री राधा नाम का ${countState.totalCount} बार जाप किया। आप भी इस सुंदर 'राधा नाम जाप' ऐप का उपयोग करें: ${window.location.origin}`;
+    
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'राधा नाम जाप',
+          text: shareText,
+          url: window.location.origin,
+        });
+        setIsShareModalOpen(false);
+      } catch (err) {
+        console.error('Share failed:', err);
+      }
+    } else {
+      setIsShareModalOpen(true);
+    }
+  };
+
+  const shareViaWhatsApp = () => {
+    const text = `राधे राधे! आज मैंने श्री राधा नाम का ${countState.totalCount} बार जाप किया। आप भी इस सुंदर 'राधा नाम जाप' ऐप का उपयोग करें: ${window.location.origin}`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+    setIsShareModalOpen(false);
+  };
+
+  const shareViaEmail = () => {
+    const subject = `राधा नाम जाप - आध्यात्मिक अनुभव`;
+    const body = `राधे राधे!\n\nआज मैंने श्री राधा नाम का ${countState.totalCount} बार जाप किया। आप भी इस सुंदर 'राधा नाम जाप' ऐप का उपयोग करें और राधा रानी की भक्ति में लीन हों।\n\nऐप लिंक: ${window.location.origin}`;
+    window.open(`mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`);
+    setIsShareModalOpen(false);
+  };
+
+  // Fix: Added missing handleReset function to reset counts and close modal
   const handleReset = () => {
     setCountState({ totalCount: 0, currentMalaCount: 0, malasCompleted: 0 });
     setIsResetModalOpen(false);
@@ -138,15 +166,13 @@ const App: React.FC = () => {
           <span className="text-[10px] uppercase tracking-[0.2em] font-bold opacity-40 -mt-1" style={{ color: currentTheme.text }}>Vrindavan Dhama</span>
         </div>
         <div className="flex gap-2">
-          {deferredPrompt && (
-            <button 
-              onClick={handleInstallClick}
-              className="p-3 rounded-full shadow-lg bg-green-500 text-white animate-bounce"
-              title="Install App"
-            >
-              <DownloadIcon />
-            </button>
-          )}
+          <button 
+            onClick={handleShareSystem}
+            className="p-3 rounded-full shadow-lg transition-all active:scale-90 bg-white/80 backdrop-blur-sm"
+            style={{ color: currentTheme.primary }}
+          >
+            <ShareIcon />
+          </button>
           <button 
             onClick={() => setSoundEnabled(!soundEnabled)}
             className="p-3 rounded-full shadow-lg transition-all active:scale-90 bg-white/80 backdrop-blur-sm"
@@ -251,14 +277,33 @@ const App: React.FC = () => {
           </div>
         </div>
       )}
+
+      {isShareModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/40 backdrop-blur-md transition-all">
+          <div className="bg-white rounded-[2.5rem] p-8 max-w-xs w-full shadow-2xl scale-in-center">
+            <h3 className="hindi-heading text-3xl font-normal text-gray-900 mb-6">शेयर करें</h3>
+            <div className="flex flex-col gap-3">
+              <button onClick={shareViaWhatsApp} className="w-full py-4 rounded-2xl font-bold text-white bg-[#25D366] flex items-center justify-center gap-3 shadow-lg">
+                <WhatsAppIcon /> WhatsApp
+              </button>
+              <button onClick={shareViaEmail} className="w-full py-4 rounded-2xl font-bold text-white bg-[#DB4437] flex items-center justify-center gap-3 shadow-lg">
+                <EmailIcon /> Email / Gmail
+              </button>
+              <button onClick={() => setIsShareModalOpen(false)} className="w-full py-4 rounded-2xl font-bold text-gray-400 bg-gray-50 mt-4">बंद करें</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
+const WhatsAppIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766 0-3.18-2.587-5.771-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217s.231.001.332.005c.109.004.253-.041.397.308.145.348.491 1.2.535 1.288.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86s.274.072.376-.043c.101-.116.433-.506.549-.68.116-.173.231-.145.39-.087s1.011.477 1.184.564.289.13.332.202c.045.072.045.419-.1.824z"/></svg>;
+const EmailIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>;
 const ThemeIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5" /><line x1="12" y1="1" x2="12" y2="3" /><line x1="12" y1="21" x2="12" y2="23" /><line x1="4.22" y1="4.22" x2="5.64" y2="5.64" /><line x1="18.36" y1="18.36" x2="19.78" y2="19.78" /><line x1="1" y1="12" x2="3" y2="12" /><line x1="21" y1="12" x2="23" y2="12" /><line x1="4.22" y1="19.78" x2="5.64" y2="18.36" /><line x1="18.36" y1="5.64" x2="19.78" y2="4.22" /></svg>;
 const ResetIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /><path d="M3 3v5h5" /></svg>;
 const SoundOnIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>;
 const SoundOffIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M11 5L6 9H2V15H6L11 19V5Z" /><line x1="23" y1="9" x2="17" y2="15" /><line x1="17" y1="9" x2="23" y2="15" /></svg>;
-const DownloadIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>;
+const ShareIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><line x1="8.59" y1="13.51" x2="15.42" y2="17.49" /><line x1="15.41" y1="6.51" x2="8.59" y2="10.49" /></svg>;
 
 export default App;
