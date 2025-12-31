@@ -29,6 +29,7 @@ const App: React.FC = () => {
 
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   
   const bellAudioRef = useRef<HTMLAudioElement | null>(null);
   const tapAudioRef = useRef<HTMLAudioElement | null>(null);
@@ -37,7 +38,25 @@ const App: React.FC = () => {
     bellAudioRef.current = new Audio(BELL_SOUND_URL);
     tapAudioRef.current = new Audio(TAP_SOUND_URL);
     if (tapAudioRef.current) tapAudioRef.current.volume = 0.2;
+
+    // PWA Install Prompt Listener
+    const handleBeforeInstallPrompt = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
   }, []);
+
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      setDeferredPrompt(null);
+    }
+  };
 
   useEffect(() => {
     localStorage.setItem('radha_jaap_state', JSON.stringify(countState));
@@ -119,6 +138,15 @@ const App: React.FC = () => {
           <span className="text-[10px] uppercase tracking-[0.2em] font-bold opacity-40 -mt-1" style={{ color: currentTheme.text }}>Vrindavan Dhama</span>
         </div>
         <div className="flex gap-2">
+          {deferredPrompt && (
+            <button 
+              onClick={handleInstallClick}
+              className="p-3 rounded-full shadow-lg bg-green-500 text-white animate-bounce"
+              title="Install App"
+            >
+              <DownloadIcon />
+            </button>
+          )}
           <button 
             onClick={() => setSoundEnabled(!soundEnabled)}
             className="p-3 rounded-full shadow-lg transition-all active:scale-90 bg-white/80 backdrop-blur-sm"
@@ -167,7 +195,6 @@ const App: React.FC = () => {
         </div>
 
         <div className="relative flex items-center justify-center py-8">
-          {/* Animated rings */}
           <div className="absolute inset-0 rounded-full border-2 border-dashed opacity-20 animate-[spin_20s_linear_infinite]" style={{ borderColor: currentTheme.primary }}></div>
           <div className="absolute inset-4 rounded-full border border-dashed opacity-10 animate-[spin_15s_linear_infinite_reverse]" style={{ borderColor: currentTheme.primary }}></div>
 
@@ -232,5 +259,6 @@ const ThemeIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="no
 const ResetIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /><path d="M3 3v5h5" /></svg>;
 const SoundOnIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>;
 const SoundOffIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M11 5L6 9H2V15H6L11 19V5Z" /><line x1="23" y1="9" x2="17" y2="15" /><line x1="17" y1="9" x2="23" y2="15" /></svg>;
+const DownloadIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>;
 
 export default App;

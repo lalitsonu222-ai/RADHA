@@ -8,19 +8,25 @@
       "src": "https://cdn-icons-png.flaticon.com/512/3303/3303108.png",
       "type": "image/png",
       "sizes": "192x192",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
       "src": "https://cdn-icons-png.flaticon.com/512/3303/3303108.png",
       "type": "image/png",
       "sizes": "512x512",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3303/3303108.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "maskable"
     }
   ],
-  "start_url": "./index.html",
-  "scope": "./",
+  "start_url": "/index.html",
   "display": "standalone",
   "theme_color": "#FF9933",
   "background_color": "#FFF3E0",
-  "orientation": "portrait"
+  "orientation": "portrait",
+  "scope": "/"
 }

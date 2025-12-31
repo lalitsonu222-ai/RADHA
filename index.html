@@ -57,7 +57,6 @@
       }
     </style>
     <script>
-      // Polyfill process for the browser and Gemini SDK
       window.process = {
         env: {
           NODE_ENV: 'production'
@@ -81,17 +80,11 @@
   <body>
     <div id="root"></div>
     <script>
-      // More robust Service Worker registration for sandbox environments
-      if ('serviceWorker' in navigator && window.location.protocol === 'https:') {
+      if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-          const swPath = './sw.js';
-          navigator.serviceWorker.register(swPath)
-            .then(registration => {
-              console.log('SW registered with scope:', registration.scope);
-            })
-            .catch(err => {
-              console.warn('Service Worker registration skipped or failed:', err.message);
-            });
+          navigator.serviceWorker.register('/sw.js', { scope: '/' })
+            .then(reg => console.log('SW Registered!', reg.scope))
+            .catch(err => console.log('SW Failed!', err));
         });
       }
     </script>
