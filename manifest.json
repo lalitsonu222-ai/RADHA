@@ -2,7 +2,14 @@
 {
   "short_name": "RadhaJaap",
   "name": "Radha Naam Jaap Counter",
+  "description": "A spiritual jaap counter for Radha Rani devotees.",
   "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3303/3303108.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
     {
       "src": "https://cdn-icons-png.flaticon.com/512/3303/3303108.png",
       "type": "image/png",
@@ -11,6 +18,7 @@
     }
   ],
   "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
   "theme_color": "#FF9933",
   "background_color": "#FFF3E0",

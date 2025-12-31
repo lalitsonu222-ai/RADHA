@@ -57,9 +57,14 @@ const App: React.FC = () => {
 
   const currentTheme = THEMES[themeType];
 
-  const handleIncrement = useCallback(() => {
+  const handleIncrement = useCallback((e?: React.MouseEvent | React.TouchEvent) => {
+    // Prevent default to stop ghost clicks on mobile
+    if (e) {
+      if ('preventDefault' in e) e.preventDefault();
+    }
+
     if ('vibrate' in navigator) {
-      navigator.vibrate(50);
+      navigator.vibrate(40);
     }
     
     setIsVibrating(true);
@@ -111,7 +116,7 @@ const App: React.FC = () => {
 
   return (
     <div 
-      className="min-h-screen flex flex-col items-center p-4 transition-colors duration-700 overflow-x-hidden"
+      className="min-h-screen flex flex-col items-center p-4 transition-colors duration-700 overflow-x-hidden selection:bg-transparent"
       style={{ backgroundColor: currentTheme.background }}
     >
       <header className="w-full max-w-md flex justify-between items-center py-6">
@@ -122,15 +127,15 @@ const App: React.FC = () => {
         <div className="flex gap-2">
           <button 
             onClick={() => setSoundEnabled(!soundEnabled)}
-            className="p-3 rounded-full shadow-lg transition-transform active:scale-95 bg-white"
+            className="p-3 rounded-full shadow-lg transition-transform active:scale-90 bg-white"
             style={{ color: soundEnabled ? currentTheme.primary : '#999' }}
           >
             {soundEnabled ? <SoundOnIcon /> : <SoundOffIcon />}
           </button>
-          <button onClick={cycleTheme} className="p-3 rounded-full shadow-lg transition-transform active:scale-95 bg-white" style={{ color: currentTheme.primary }}>
+          <button onClick={cycleTheme} className="p-3 rounded-full shadow-lg transition-transform active:scale-90 bg-white" style={{ color: currentTheme.primary }}>
             <ThemeIcon />
           </button>
-          <button onClick={() => setIsResetModalOpen(true)} className="p-3 rounded-full shadow-lg transition-transform active:scale-95 bg-white" style={{ color: currentTheme.accent }}>
+          <button onClick={() => setIsResetModalOpen(true)} className="p-3 rounded-full shadow-lg transition-transform active:scale-90 bg-white" style={{ color: currentTheme.accent }}>
             <ResetIcon />
           </button>
         </div>
@@ -168,13 +173,13 @@ const App: React.FC = () => {
         </div>
 
         <button
-          onClick={handleIncrement}
-          className={`w-64 h-64 md:w-72 md:h-72 rounded-full shadow-2xl flex flex-col items-center justify-center transition-all duration-150 active:scale-90 relative overflow-hidden z-10 ${isVibrating ? 'scale-95' : 'scale-100'}`}
+          onPointerDown={handleIncrement}
+          className={`w-64 h-64 md:w-72 md:h-72 rounded-full shadow-2xl flex flex-col items-center justify-center transition-all duration-75 active:scale-90 relative overflow-hidden z-10 select-none touch-none ${isVibrating ? 'scale-95 brightness-110' : 'scale-100'}`}
           style={{ backgroundColor: currentTheme.primary }}
         >
-          <span className="hindi-heading text-6xl md:text-7xl text-white drop-shadow-lg">राधा</span>
-          <span className="hindi-heading text-6xl md:text-7xl text-white drop-shadow-lg -mt-4">राधा</span>
-          <span className="text-white/60 text-[10px] mt-4 tracking-widest uppercase font-black">Tap Bead</span>
+          <span className="hindi-heading text-6xl md:text-7xl text-white drop-shadow-lg pointer-events-none">राधा</span>
+          <span className="hindi-heading text-6xl md:text-7xl text-white drop-shadow-lg -mt-4 pointer-events-none">राधा</span>
+          <span className="text-white/60 text-[10px] mt-4 tracking-widest uppercase font-black pointer-events-none">Tap Bead</span>
         </button>
 
         {mode === CountingMode.MALA && (
@@ -205,13 +210,13 @@ const App: React.FC = () => {
       </footer>
 
       {isResetModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
           <div className="bg-white rounded-3xl p-8 max-w-xs w-full shadow-2xl">
             <h3 className="hindi-heading text-2xl font-normal text-gray-900 mb-2">रीसेट करें?</h3>
             <p className="text-gray-500 text-sm mb-6">This will clear your total count of {countState.totalCount} jaaps.</p>
             <div className="flex gap-3">
-              <button onClick={() => setIsResetModalOpen(false)} className="flex-1 py-3 px-4 rounded-xl font-bold text-gray-700 bg-gray-100">रद्द करें</button>
-              <button onClick={handleReset} className="flex-1 py-3 px-4 rounded-xl font-bold text-white bg-red-500">रीसेट</button>
+              <button onClick={() => setIsResetModalOpen(false)} className="flex-1 py-3 px-4 rounded-xl font-bold text-gray-700 bg-gray-100 active:scale-95 transition-transform">रद्द करें</button>
+              <button onClick={handleReset} className="flex-1 py-3 px-4 rounded-xl font-bold text-white bg-red-500 active:scale-95 transition-transform">रीसेट</button>
             </div>
           </div>
         </div>
