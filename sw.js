@@ -1,56 +1,27 @@
 
-const CACHE_NAME = 'radha-jaap-v3';
-const ASSETS_TO_CACHE = [
-  './',
+const CACHE_NAME = 'radha-v5';
+const ASSETS = [
   './index.html',
-  './manifest.json',
-  'https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&family=Rozha+One&family=Poppins:wght@300;400;600&display=swap',
-  'https://cdn.tailwindcss.com'
+  './manifest.json'
 ];
 
-// Install Event: Cache essential assets
-self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS_TO_CACHE);
-    }).then(() => self.skipWaiting())
+self.addEventListener('install', (e) => {
+  e.waitUntil(
+    caches.open(CACHE_NAME).then(c => {
+      // Use add instead of addAll to be more resilient to individual failures
+      return Promise.allSettled(ASSETS.map(url => c.add(url)));
+    })
   );
 });
 
-// Activate Event: Cleanup old caches
-self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cache) => {
-          if (cache !== CACHE_NAME) {
-            return caches.delete(cache);
-          }
-        })
-      );
-    }).then(() => self.clients.claim())
-  );
-});
+self.addEventListener('fetch', (e) => {
+  // Only handle GET requests and avoid chrome-extension or other schemes
+  if (e.request.method !== 'GET' || !e.request.url.startsWith('http')) return;
 
-// Fetch Event: Stale-while-revalidate strategy
-self.addEventListener('fetch', (event) => {
-  // Only handle GET requests
-  if (event.request.method !== 'GET') return;
-
-  event.respondWith(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.match(event.request).then((cachedResponse) => {
-        const fetchedResponse = fetch(event.request).then((networkResponse) => {
-          // Update the cache with the latest version from network
-          if (networkResponse.status === 200) {
-            cache.put(event.request, networkResponse.clone());
-          }
-          return networkResponse;
-        }).catch(() => {
-          // If network fails, the cachedResponse will still be returned
-        });
-
-        return cachedResponse || fetchedResponse;
+  e.respondWith(
+    caches.match(e.request).then(res => {
+      return res || fetch(e.request).catch(() => {
+        // Fallback or just let it fail if offline and not cached
       });
     })
   );

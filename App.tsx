@@ -28,7 +28,7 @@ const App: React.FC = () => {
   });
 
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
-  const [isVibrating, setIsVibrating] = useState(false);
+  const [activeTab, setActiveTab] = useState(false);
   
   const bellAudioRef = useRef<HTMLAudioElement | null>(null);
   const tapAudioRef = useRef<HTMLAudioElement | null>(null);
@@ -36,7 +36,7 @@ const App: React.FC = () => {
   useEffect(() => {
     bellAudioRef.current = new Audio(BELL_SOUND_URL);
     tapAudioRef.current = new Audio(TAP_SOUND_URL);
-    if (tapAudioRef.current) tapAudioRef.current.volume = 0.3;
+    if (tapAudioRef.current) tapAudioRef.current.volume = 0.2;
   }, []);
 
   useEffect(() => {
@@ -49,26 +49,20 @@ const App: React.FC = () => {
 
   useEffect(() => {
     localStorage.setItem('radha_jaap_mode', mode);
-  }, [mode]);
-
-  useEffect(() => {
     localStorage.setItem('radha_jaap_sound', String(soundEnabled));
-  }, [soundEnabled]);
+  }, [mode, soundEnabled]);
 
   const currentTheme = THEMES[themeType];
 
-  const handleIncrement = useCallback((e?: React.MouseEvent | React.TouchEvent) => {
-    // Prevent default to stop ghost clicks on mobile
-    if (e) {
-      if ('preventDefault' in e) e.preventDefault();
-    }
-
+  const handleIncrement = useCallback((e?: React.PointerEvent | React.MouseEvent) => {
+    if (e) e.preventDefault();
+    
     if ('vibrate' in navigator) {
-      navigator.vibrate(40);
+      navigator.vibrate(50);
     }
     
-    setIsVibrating(true);
-    setTimeout(() => setIsVibrating(false), 100);
+    setActiveTab(true);
+    setTimeout(() => setActiveTab(false), 100);
 
     if (soundEnabled && tapAudioRef.current) {
       tapAudioRef.current.currentTime = 0;
@@ -82,13 +76,13 @@ const App: React.FC = () => {
       let newMalasCompleted = prev.malasCompleted;
       let finalCurrentMala = newCurrentMala;
 
-      if (newCurrentMala === MALA_TARGET) {
+      if (mode === CountingMode.MALA && newCurrentMala >= MALA_TARGET) {
         newMalasCompleted += 1;
         finalCurrentMala = 0;
         
         if (soundEnabled && bellAudioRef.current) {
           bellAudioRef.current.currentTime = 0;
-          bellAudioRef.current.play().catch(e => console.error("Audio playback failed", e));
+          bellAudioRef.current.play().catch(() => {});
         }
       }
 
@@ -98,7 +92,7 @@ const App: React.FC = () => {
         malasCompleted: newMalasCompleted
       };
     });
-  }, [soundEnabled]);
+  }, [soundEnabled, mode]);
 
   const handleReset = () => {
     setCountState({ totalCount: 0, currentMalaCount: 0, malasCompleted: 0 });
@@ -116,43 +110,43 @@ const App: React.FC = () => {
 
   return (
     <div 
-      className="min-h-screen flex flex-col items-center p-4 transition-colors duration-700 overflow-x-hidden selection:bg-transparent"
+      className="min-h-screen flex flex-col items-center p-4 transition-colors duration-1000 overflow-x-hidden"
       style={{ backgroundColor: currentTheme.background }}
     >
       <header className="w-full max-w-md flex justify-between items-center py-6">
-        <div>
+        <div className="flex flex-col">
           <h1 className="hindi-heading text-4xl font-normal leading-tight" style={{ color: currentTheme.primary }}>श्री राधा</h1>
-          <p className="hindi-script text-sm font-bold tracking-wide opacity-70" style={{ color: currentTheme.text }}>Jaap Counter</p>
+          <span className="text-[10px] uppercase tracking-[0.2em] font-bold opacity-40 -mt-1" style={{ color: currentTheme.text }}>Vrindavan Dhama</span>
         </div>
         <div className="flex gap-2">
           <button 
             onClick={() => setSoundEnabled(!soundEnabled)}
-            className="p-3 rounded-full shadow-lg transition-transform active:scale-90 bg-white"
-            style={{ color: soundEnabled ? currentTheme.primary : '#999' }}
+            className="p-3 rounded-full shadow-lg transition-all active:scale-90 bg-white/80 backdrop-blur-sm"
+            style={{ color: soundEnabled ? currentTheme.primary : '#ccc' }}
           >
             {soundEnabled ? <SoundOnIcon /> : <SoundOffIcon />}
           </button>
-          <button onClick={cycleTheme} className="p-3 rounded-full shadow-lg transition-transform active:scale-90 bg-white" style={{ color: currentTheme.primary }}>
+          <button onClick={cycleTheme} className="p-3 rounded-full shadow-lg transition-all active:scale-90 bg-white/80 backdrop-blur-sm" style={{ color: currentTheme.primary }}>
             <ThemeIcon />
           </button>
-          <button onClick={() => setIsResetModalOpen(true)} className="p-3 rounded-full shadow-lg transition-transform active:scale-90 bg-white" style={{ color: currentTheme.accent }}>
+          <button onClick={() => setIsResetModalOpen(true)} className="p-3 rounded-full shadow-lg transition-all active:scale-90 bg-white/80 backdrop-blur-sm" style={{ color: currentTheme.accent }}>
             <ResetIcon />
           </button>
         </div>
       </header>
 
-      <div className="w-full max-w-md flex justify-center mb-6">
-        <div className="p-1 rounded-2xl flex gap-1 bg-black/5">
+      <div className="w-full max-w-md flex justify-center mb-8">
+        <div className="p-1 rounded-2xl flex gap-1 bg-black/5 backdrop-blur-sm">
           <button 
             onClick={() => setMode(CountingMode.MALA)}
-            className={`px-6 py-2 rounded-xl text-xs font-bold transition-all ${mode === CountingMode.MALA ? 'bg-white shadow-sm' : 'opacity-40'}`}
+            className={`px-6 py-2 rounded-xl text-xs font-bold transition-all ${mode === CountingMode.MALA ? 'bg-white shadow-sm scale-105' : 'opacity-40'}`}
             style={{ color: mode === CountingMode.MALA ? currentTheme.primary : currentTheme.text }}
           >
             माला (108)
           </button>
           <button 
             onClick={() => setMode(CountingMode.UNLIMITED)}
-            className={`px-6 py-2 rounded-xl text-xs font-bold transition-all ${mode === CountingMode.UNLIMITED ? 'bg-white shadow-sm' : 'opacity-40'}`}
+            className={`px-6 py-2 rounded-xl text-xs font-bold transition-all ${mode === CountingMode.UNLIMITED ? 'bg-white shadow-sm scale-105' : 'opacity-40'}`}
             style={{ color: mode === CountingMode.UNLIMITED ? currentTheme.primary : currentTheme.text }}
           >
             असीमित
@@ -160,63 +154,72 @@ const App: React.FC = () => {
         </div>
       </div>
 
-      <main className="flex-1 w-full max-w-md flex flex-col items-center justify-center gap-6 py-4">
+      <main className="flex-1 w-full max-w-md flex flex-col items-center justify-between py-2">
         <div className="text-center">
-          <span className="text-7xl font-black tabular-nums transition-all duration-300" style={{ color: currentTheme.text }}>
+          <h2 className="text-7xl font-black tabular-nums transition-all duration-300 tracking-tighter" style={{ color: currentTheme.text }}>
             {countState.totalCount.toLocaleString()}
-          </span>
-          <div className="mt-2">
-            <span className="hindi-script text-lg font-bold opacity-60" style={{ color: currentTheme.text }}>
-              {mode === CountingMode.MALA ? 'कुल जाप' : 'अनंत जाप'}
+          </h2>
+          <div className="mt-1">
+            <span className="hindi-script text-xl font-bold opacity-60" style={{ color: currentTheme.text }}>
+              कुल सुमिरन
             </span>
           </div>
         </div>
 
-        <button
-          onPointerDown={handleIncrement}
-          className={`w-64 h-64 md:w-72 md:h-72 rounded-full shadow-2xl flex flex-col items-center justify-center transition-all duration-75 active:scale-90 relative overflow-hidden z-10 select-none touch-none ${isVibrating ? 'scale-95 brightness-110' : 'scale-100'}`}
-          style={{ backgroundColor: currentTheme.primary }}
-        >
-          <span className="hindi-heading text-6xl md:text-7xl text-white drop-shadow-lg pointer-events-none">राधा</span>
-          <span className="hindi-heading text-6xl md:text-7xl text-white drop-shadow-lg -mt-4 pointer-events-none">राधा</span>
-          <span className="text-white/60 text-[10px] mt-4 tracking-widest uppercase font-black pointer-events-none">Tap Bead</span>
-        </button>
+        <div className="relative flex items-center justify-center py-8">
+          {/* Animated rings */}
+          <div className="absolute inset-0 rounded-full border-2 border-dashed opacity-20 animate-[spin_20s_linear_infinite]" style={{ borderColor: currentTheme.primary }}></div>
+          <div className="absolute inset-4 rounded-full border border-dashed opacity-10 animate-[spin_15s_linear_infinite_reverse]" style={{ borderColor: currentTheme.primary }}></div>
+
+          <button
+            onPointerDown={handleIncrement}
+            className={`w-64 h-64 md:w-72 md:h-72 rounded-full shadow-[0_20px_50px_rgba(0,0,0,0.1)] flex flex-col items-center justify-center transition-all duration-75 active:scale-95 relative overflow-hidden z-10 select-none touch-none pulse-button ${activeTab ? 'brightness-125 scale-95' : ''}`}
+            style={{ backgroundColor: currentTheme.primary }}
+          >
+            <div className="absolute inset-0 bg-gradient-to-tr from-black/20 to-transparent pointer-events-none"></div>
+            <span className="hindi-heading text-7xl text-white drop-shadow-[0_4px_4px_rgba(0,0,0,0.3)] pointer-events-none">राधा</span>
+            <span className="hindi-heading text-7xl text-white drop-shadow-[0_4px_4px_rgba(0,0,0,0.3)] -mt-6 pointer-events-none">राधा</span>
+            <span className="text-white/40 text-[9px] mt-6 tracking-[0.3em] uppercase font-black pointer-events-none">Tap to Chant</span>
+          </button>
+        </div>
 
         {mode === CountingMode.MALA && (
-          <div className="w-full bg-white/40 rounded-3xl p-6 shadow-sm backdrop-blur-md">
-            <div className="flex justify-between items-end mb-4">
+          <div className="w-full bg-white/50 rounded-3xl p-6 shadow-sm backdrop-blur-xl border border-white/20">
+            <div className="flex justify-between items-end mb-3">
               <div>
                 <p className="hindi-script text-sm font-bold opacity-60" style={{ color: currentTheme.text }}>माला पूर्ण</p>
-                <p className="text-3xl font-black" style={{ color: currentTheme.primary }}>{countState.malasCompleted}</p>
+                <p className="text-4xl font-black" style={{ color: currentTheme.primary }}>{countState.malasCompleted}</p>
               </div>
               <div className="text-right">
                 <p className="hindi-script text-xs font-bold opacity-40 uppercase" style={{ color: currentTheme.text }}>वर्तमान माला</p>
-                <p className="text-lg font-bold" style={{ color: currentTheme.text }}>{countState.currentMalaCount} / {MALA_TARGET}</p>
+                <p className="text-lg font-bold" style={{ color: currentTheme.text }}>{countState.currentMalaCount} <span className="opacity-30">/</span> {MALA_TARGET}</p>
               </div>
             </div>
-            <div className="w-full h-3 bg-gray-200/50 rounded-full overflow-hidden">
-              <div className="h-full transition-all duration-300 rounded-full" style={{ width: `${progressPercentage}%`, backgroundColor: currentTheme.primary }}></div>
+            <div className="w-full h-2.5 bg-black/5 rounded-full overflow-hidden">
+              <div className="h-full transition-all duration-500 rounded-full bg-gradient-to-r" style={{ width: `${progressPercentage}%`, backgroundColor: currentTheme.primary }}></div>
             </div>
           </div>
         )}
 
-        <SpiritualQuote theme={currentTheme} />
+        <div className="w-full px-2">
+          <SpiritualQuote theme={currentTheme} />
+        </div>
       </main>
 
-      <footer className="w-full max-w-md py-4 text-center">
-        <p className="hindi-script text-xs font-bold tracking-widest uppercase opacity-40" style={{ color: currentTheme.text }}>
-          Developed with Devotion • {mode === CountingMode.MALA ? '१०८ जाप = १ माला' : 'असीमित जाप मोड'}
+      <footer className="w-full max-w-md py-6 text-center">
+        <p className="hindi-script text-[10px] font-bold tracking-[0.2em] uppercase opacity-30" style={{ color: currentTheme.text }}>
+          ॥ राधा रानी की जय ॥
         </p>
       </footer>
 
       {isResetModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-white rounded-3xl p-8 max-w-xs w-full shadow-2xl">
-            <h3 className="hindi-heading text-2xl font-normal text-gray-900 mb-2">रीसेट करें?</h3>
-            <p className="text-gray-500 text-sm mb-6">This will clear your total count of {countState.totalCount} jaaps.</p>
-            <div className="flex gap-3">
-              <button onClick={() => setIsResetModalOpen(false)} className="flex-1 py-3 px-4 rounded-xl font-bold text-gray-700 bg-gray-100 active:scale-95 transition-transform">रद्द करें</button>
-              <button onClick={handleReset} className="flex-1 py-3 px-4 rounded-xl font-bold text-white bg-red-500 active:scale-95 transition-transform">रीसेट</button>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/40 backdrop-blur-md transition-all">
+          <div className="bg-white rounded-[2.5rem] p-8 max-w-xs w-full shadow-2xl scale-in-center">
+            <h3 className="hindi-heading text-3xl font-normal text-gray-900 mb-2">मिटा दें?</h3>
+            <p className="text-gray-500 text-sm mb-8 leading-relaxed">क्या आप अपनी अब तक की {countState.totalCount} जाप की गणना को हटाना चाहते हैं?</p>
+            <div className="flex flex-col gap-3">
+              <button onClick={handleReset} className="w-full py-4 rounded-2xl font-bold text-white bg-red-500 active:scale-95 transition-all shadow-lg shadow-red-200">हाँ, रीसेट करें</button>
+              <button onClick={() => setIsResetModalOpen(false)} className="w-full py-4 rounded-2xl font-bold text-gray-400 bg-gray-50 active:scale-95 transition-all">नहीं, रहने दें</button>
             </div>
           </div>
         </div>
